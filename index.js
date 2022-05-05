@@ -9,6 +9,7 @@ const movieData = require("./MovieData/data.json")
 
 app.get("/", homeHandler); 
 app.get("/favorite", favHandler);
+app.get('/*', errorHandler)
 
 function homeHandler(req,res){
     
@@ -20,14 +21,14 @@ function favHandler(req, res) {
     res.send("Welcome to thefavorite page");
 }
 
-app.use(function(err,req,res,next){
+app.use(function(err,req,res){
 console.error(err.stack)
 res.status(500).send('Sorry, something went wrong')
 })
 
-// app.use(function(req, res, next) {
-//     res.status(404).send("Page not found error")
-//   })
+function errorHandler(req, res) {
+     res.status(404).send("Page not found error")
+   }
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
