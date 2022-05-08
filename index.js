@@ -3,16 +3,46 @@
 const express = require("express");
 const cors = require("cors");
 const axios = require('axios').default;
+const bodyParser = require('body-parser');
 require("dotenv").config();
 const port = 3000;
 const app = express();
 app.use(cors());
 let apiKey = process.env.API_KEY ;
 
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+let urll = "postgres://laila:0000@localhost:5432/movie";
+const { Client } = require('pg')
+const client = new Client(urll);
+
 app.get("/trending", trendingHandler);
 app.get("/search", searchHandler);
 app.get('/latest', latestHandler);
 app.get('/top', topHandler);
+app.post('/addMovie', addHandler);
+app.get('/getMovies', getHandler);
+
+function addHandler(req, res){
+   console.log(req.body);
+   //res.send('ok');
+   let {specificmovie,comment} = req.body;
+   let sql = `INSERT INTO addMovie(specificmovie,comment)VALUES ($1,$2) RETURNING *;`; 
+   let values = [specificmovie,comment];
+   client.query(sql,values).then(result=>{
+     console.log(result);
+     return res.status(201).json(result.rows);
+   })
+}
+
+function getHandler(req, res){
+  let sql = `SELECT * FROM addMovie;`;
+  client.query(sql).then(result=>{
+    console.log(result);
+    res.json(result.rows);
+  }).catch()
+}
 
 function trendingHandler(req, res) {  
   let url = `https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}`; 
@@ -131,7 +161,11 @@ function Movie(id,title,releasedate,path,overview){
 //      res.status(404).send("Page not found error")
 //    }
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+client.connect().then(()=>{
+
+  app.listen(port, () => {
+    console.log(`Example app listening on port ${port}`)
+  })
+
 })
 
