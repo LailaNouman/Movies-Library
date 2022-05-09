@@ -23,6 +23,41 @@ app.get('/latest', latestHandler);
 app.get('/top', topHandler);
 app.post('/addMovie', addHandler);
 app.get('/getMovies', getHandler);
+app.put('/update/:id', updateHandler);
+app.delete('/delete/:id', deleteHandler);
+app.get('/getMovie/:id', getmovieHandler);
+
+function updateHandler(req, res){
+    let id = req.params.id;
+    //let specificmovie = req.body.specificmovie;
+    let comment = req.body.comment;
+    let values = [comment];
+    let sql = `UPDATE addMovie SET comment = $1 WHERE id=${id} RETURNING *;`;
+    client.query(sql,values).then(result =>{
+          console.log(result.rows[0]);
+          res.json(result.rows);
+    }).catch()
+}
+
+function deleteHandler(req, res){
+   let id = req.params.id;
+   let sql = `DELETE FROM addMovie WHERE id=${id} RETURNING *;`;
+   client.query(sql).then(result =>{
+        console.log(result.rows[0]);
+        res.json(result.rows);
+   }).catch(err =>{
+     console.log(err);
+   })
+}
+
+function getmovieHandler(req, res){
+  let id = req.params.id;
+  let sql = `SELECT * FROM addMovie WHERE id=${id};`;
+  client.query(sql).then(result=>{
+    console.log(result);
+    res.json(result.rows);
+  }).catch()
+}
 
 function addHandler(req, res){
    console.log(req.body);
@@ -43,6 +78,7 @@ function getHandler(req, res){
     res.json(result.rows);
   }).catch()
 }
+
 
 function trendingHandler(req, res) {  
   let url = `https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}`; 
