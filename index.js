@@ -5,7 +5,7 @@ const cors = require("cors");
 const axios = require('axios').default;
 const bodyParser = require('body-parser');
 require("dotenv").config();
-const port = 3000;
+const port = process.env.PORT || 3001;
 const app = express();
 app.use(cors());
 let apiKey = process.env.API_KEY ;
@@ -13,9 +13,17 @@ let apiKey = process.env.API_KEY ;
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-let urll = "postgres://laila:0000@localhost:5432/movie";
+// let urll = "postgres://laila:0000@localhost:5432/movie";
+const url = process.env.DATABASE_URL;
 const { Client } = require('pg')
-const client = new Client(urll);
+// const client = new Client(url);
+const client = new Client({
+    connectionString: process.env.DATABASE_URL,
+  ssl: {
+      rejectUnauthorized: false
+  }
+})
+
 
 app.get("/trending", trendingHandler);
 app.get("/search", searchHandler);
